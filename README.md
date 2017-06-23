@@ -22,5 +22,7 @@ $router->get('/hello', function(){
     echo '<h1>Hello World!</h1>';
 });
 
+$router->get('/profile/:id', 'ProfileController@showProfile');
+
 $router->run();
 ```
