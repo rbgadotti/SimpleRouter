@@ -25,16 +25,16 @@
 		private $url;
 
     /**
-     * Callback function.
+     * Callback function or string reference to class function.
      * @var callable
      */
 		private $callback;
 
     /**
      * Create route.
-     * @param string 		$method Request method
-     * @param string 		$url URL
-     * @param callable 	$callback Route callback.
+     * @param string 						$method Request method
+     * @param string 						$url URL
+     * @param callable|string 	$callback Route callback.
      * @access public
      * @return boolean
      */
@@ -52,8 +52,17 @@
 				throw new Exception('Route url can\'t be null');
 			}
 
-			if(!is_null($callback) && is_callable($callback)){
-				$this->callback = $callback;
+			if(!is_null($callback)){
+				if(is_callable($callback)){
+					$this->callback = $callback;
+				}elseif(is_string($callback)){
+					if(count(explode('@', $callback) === 2)){
+						$this->callback = $callback;
+					}else{
+						throw new Exception('Invalid reference to callback');
+					}
+				}
+
 			}else{
 				throw new Exception('Route callback needs to be callable');	
 			}
@@ -104,7 +113,7 @@
      * Create SimpleRoute object and add to array of routes.
      * @param string 		$method Request method
      * @param string 		$url URL
-     * @param callable 	$callback Callback function.
+     * @param callable|string 	$callback Callback function or reference to class function.
      * @access public
      * @return void
      */
@@ -115,7 +124,7 @@
     /**
      * Create SimpleRoute object with GET method.
      * @param string 		$url URL
-     * @param callable 	$callback Callback function.
+     * @param callable|string 	$callback Callback function or reference to class function.
      * @access public
      * @return void
      */
@@ -126,7 +135,7 @@
     /**
      * Create SimpleRoute object with POST method.
      * @param string 		$url URL
-     * @param callable 	$callback Callback function.
+     * @param callable|string 	$callback Callback function or reference to class function.
      * @access public
      * @return void
      */
@@ -137,7 +146,7 @@
     /**
      * Create SimpleRoute object with PATCH method.
      * @param string 		$url URL
-     * @param callable 	$callback Callback function.
+     * @param callable|string 	$callback Callback function or reference to class function.
      * @access public
      * @return void
      */
@@ -148,7 +157,7 @@
     /**
      * Create SimpleRoute object with PUT method.
      * @param string 		$url URL
-     * @param callable 	$callback Callback function.
+     * @param callable|string 	$callback Callback function or reference to class function.
      * @access public
      * @return void
      */
@@ -159,7 +168,7 @@
     /**
      * Create SimpleRoute object with DELETE method.
      * @param string 		$url URL
-     * @param callable 	$callback Callback function.
+     * @param callable|string 	$callback Callback function or reference to class function.
      * @access public
      * @return void
      */
@@ -170,7 +179,7 @@
     /**
      * Create SimpleRoute object with OPTIONS method.
      * @param string 		$url URL
-     * @param callable 	$callback Callback function.
+     * @param callable|string 	$callback Callback function or reference to class function.
      * @access public
      * @return void
      */
@@ -181,7 +190,7 @@
     /**
      * Create SimpleRoute object for all allowed methods.
      * @param string 		$url URL
-     * @param callable 	$callback Callback function.
+     * @param callable|string 	$callback Callback function or reference to class function.
      * @access public
      * @return void
      */
@@ -214,7 +223,19 @@
         	// Remove the first match
 					array_shift($requestQueryParams);
 					// Call the callback with the matched positions as params
-					return call_user_func_array($route->getCallback(), $requestQueryParams);
+					if(is_callable($route->getCallback())){
+						return call_user_func_array($route->getCallback(), $requestQueryParams);
+					}elseif(is_string($route->getCallback())){
+						$className = explode('@', $route->getCallback())[0];
+						$methodName = explode('@', $route->getCallback())[1];
+						$obj = new $className();
+						if(method_exists($obj, $methodName)){
+							call_user_func_array(array($obj, $methodName), $requestQueryParams);
+						}else{
+							throw new Exception('Object '. $className . ' has no method called '. $methodName);
+						}
+					}
+
         }
 
 			}
