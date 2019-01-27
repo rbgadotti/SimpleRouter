@@ -1,5 +1,5 @@
 # Simple Router
-A simple PHP Router created in a single file differentiating verbs from requisition
+A simple PHP Router created in a single file differentiating verbs from requisition, simulating requests and work with url params
 
 # What I Learned
 * How a router works
