@@ -1,5 +1,9 @@
 # Simple Router
-PHP Router in a single file.
+A simple PHP Router created in a single file differentiating verbs from requisition
+
+# What I Learned
+* How a router works
+* How to use regex to detected url params
 
 ## Usage
 
